@@ -1,0 +1,35 @@
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class myFirstClass {
+    public static void main(String[] args) throws IOException {
+        String page = downloadWebPage("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY");
+        int urlBegin = page.lastIndexOf("url");
+        int urlEnd = page.lastIndexOf("}");
+        String url  = page.substring(urlBegin + 6, urlEnd - 1);
+        try(InputStream in = new URL(url).openStream()){
+            Files.copy(in, Paths.get("new.jpg"));
+        }
+        System.out.println("Picture saved!");
+
+        int explanationBegin = page.lastIndexOf("explanation");
+        int explanationEnd = page.lastIndexOf("hdurl");
+        String explanation  = page.substring(explanationBegin + 13, explanationEnd - 3);
+        System.out.println(explanation);
+    }
+    private static String downloadWebPage(String url) throws IOException {
+        StringBuilder result = new StringBuilder();
+        String line;
+        URLConnection urlConnection = new URL(url).openConnection();
+        try (InputStream is = urlConnection.getInputStream();
+             BufferedReader br  = new BufferedReader(new InputStreamReader(is))) {
+            while ((line = br.readLine()) != null) {
+                result.append(line);
+            }
+        }
+        return  result.toString();
+    }
+}
